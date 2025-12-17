@@ -98,7 +98,7 @@ export default function MobileMenu({
                   <Link
                     href={link.href}
                     onClick={onClose}
-                    className={`text-3xl font-light tracking-wide hover:text-green-400 transition-colors flex items-center justify-between group ${
+                    className={`text-md lg:text-3xl font-light tracking-wide hover:text-green-400 transition-colors flex items-center justify-between group ${
                       link.active ? "text-white font-normal" : "text-gray-400"
                     }`}
                   >

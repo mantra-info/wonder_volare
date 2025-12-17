@@ -187,7 +187,7 @@ function ThankYouContent() {
       <div className="flex gap-4">
         <button
           onClick={handleManualDownload}
-          className="flex items-center gap-2 bg-slate-500 hover:bg-slate-600 text-white py-3 px-6 rounded-full transition-colors font-medium"
+          className="flex items-center gap-2 bg-slate-500 hover:bg-slate-600 text-white py-3 px-3 lg:px-6 rounded-full transition-colors font-medium"
         >
           Download Ticket
           <Download size={18} />

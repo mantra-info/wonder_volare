@@ -42,7 +42,7 @@ const AboutUs = () => {
             The Wonder Volare Experience
           </h1>
 
-           <div className="absolute bottom-10 right-6">
+         <div className="fixed bottom-8 right-8 z-50 animate-bounce-slow">
                 <BookRideButton mode="inline" />
               </div>
         </div>

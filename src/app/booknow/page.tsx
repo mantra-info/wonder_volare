@@ -1,6 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Calendar, Clock, Users, ArrowRight, Check, XCircle } from "lucide-react"; // Added XCircle
+import {
+  Calendar,
+  Clock,
+  Users,
+  ArrowRight,
+  Check,
+  XCircle,
+} from "lucide-react"; // Added XCircle
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Footer";
 
@@ -11,6 +18,9 @@ import { CustomPeoplePicker } from "@/components/Booking/CustomPeoplePicker";
 import { SuccessModal } from "@/components/Booking/SuccessModal";
 import PageBreadcrumb from "@/components/BreadCrumb";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import Modal from "@/components/ui/Modal";
+import AuthForm from "@/components/auth/AuthForm";
 
 // Define the TimeSlot interface (used for fetching availability)
 interface TimeSlot {
@@ -20,13 +30,12 @@ interface TimeSlot {
 
 // Mock initial/default time slots (all unavailable before a date is selected)
 const DEFAULT_TIME_SLOTS: TimeSlot[] = [
-    { time: "06.00am - 07.00am", status: "unavailable" },
-    { time: "07.30am - 08.30am", status: "unavailable" },
-    { time: "09.00am - 10.00am", status: "unavailable" },
-    { time: "10.30am - 11.30am", status: "unavailable" },
-    { time: "05.00pm - 06.00pm", status: "unavailable" },
+  { time: "06.00am - 07.00am", status: "unavailable" },
+  { time: "07.30am - 08.30am", status: "unavailable" },
+  { time: "09.00am - 10.00am", status: "unavailable" },
+  { time: "10.30am - 11.30am", status: "unavailable" },
+  { time: "05.00pm - 06.00pm", status: "unavailable" },
 ];
-
 
 const plans: Plan[] = [
   // ... (plans array remains the same)
@@ -50,31 +59,35 @@ const plans: Plan[] = [
   },
 ];
 
-
 // Simple Toast component (replace with a real library like react-hot-toast in a real app)
-const ToastNotification: React.FC<{ message: string; onClose: () => void }> = ({ message, onClose }) => {
-    if (!message) return null;
-    // Auto-hide after 5 seconds
-    useEffect(() => {
-        const timer = setTimeout(onClose, 5000);
-        return () => clearTimeout(timer);
-    }, [message, onClose]);
-    
-    return (
-        <div className="fixed top-5 right-5 z-[1000] p-4 bg-red-600 text-white rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-right-10 duration-300">
-            <XCircle size={20} />
-            <span>{message}</span>
-            <button onClick={onClose} className="ml-4 font-bold">X</button>
-        </div>
-    );
-};
+const ToastNotification: React.FC<{ message: string; onClose: () => void }> = ({
+  message,
+  onClose,
+}) => {
+  if (!message) return null;
+  // Auto-hide after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [message, onClose]);
 
+  return (
+    <div className="fixed top-5 right-5 z-[1000] p-4 bg-red-600 text-white rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-right-10 duration-300">
+      <XCircle size={20} />
+      <span>{message}</span>
+      <button onClick={onClose} className="ml-4 font-bold">
+        X
+      </button>
+    </div>
+  );
+};
 
 const BookingPage: React.FC = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const router = useRouter();
-  
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const { user, setUser } = useAuth();
   // Picker visibility state
   const [activePicker, setActivePicker] = useState<
     "date" | "time" | "people" | null
@@ -83,14 +96,13 @@ const BookingPage: React.FC = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [bookingData, setBookingData] = useState<BookingTicket | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // State for Time Slot Availability
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(DEFAULT_TIME_SLOTS);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-  
+
   // State for error/validation message (simulates toast)
   const [errorMessage, setErrorMessage] = useState("");
-
 
   const [formData, setFormData] = useState<BookingFormData>({
     name: "",
@@ -108,110 +120,121 @@ const BookingPage: React.FC = () => {
       year: "numeric",
     });
   };
-const getLocalFormattedDate = (date: Date): string => {
+  const getLocalFormattedDate = (date: Date): string => {
     const year = date.getFullYear();
     // getMonth() is 0-indexed, so we add 1.
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-};
+  };
 
   // Function to fetch time slots based on selected date
   const fetchTimeSlots = useCallback(async (date: Date) => {
-      setIsLoadingSlots(true);
-      setTimeSlots(DEFAULT_TIME_SLOTS.map(s => ({...s, status: "unavailable"}))); // Clear/disable slots while loading
-      
-      try {
-          // Use YYYY-MM-DD format for API query
-          const formattedDate =getLocalFormattedDate(date)
-          // New API call to check availability
-          const response = await fetch(`/api/bookings?date=${formattedDate}`);
-          
-          if (!response.ok) {
-              throw new Error("Failed to fetch availability.");
-          }
+    setIsLoadingSlots(true);
+    setTimeSlots(
+      DEFAULT_TIME_SLOTS.map((s) => ({ ...s, status: "unavailable" }))
+    ); // Clear/disable slots while loading
 
-          const data = await response.json();
-          setTimeSlots(data.slots || []);
-      } catch (error) {
-          console.error("Fetch time slots error:", error);
-          setErrorMessage("Could not load time slots. Please try another date.");
-          setTimeSlots(DEFAULT_TIME_SLOTS.map(s => ({...s, status: "unavailable"})));
-      } finally {
-          setIsLoadingSlots(false);
+    try {
+      // Use YYYY-MM-DD format for API query
+      const formattedDate = getLocalFormattedDate(date);
+      // New API call to check availability
+      const response = await fetch(`/api/bookings?date=${formattedDate}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch availability.");
       }
+
+      const data = await response.json();
+      setTimeSlots(data.slots || []);
+    } catch (error) {
+      console.error("Fetch time slots error:", error);
+      setErrorMessage("Could not load time slots. Please try another date.");
+      setTimeSlots(
+        DEFAULT_TIME_SLOTS.map((s) => ({ ...s, status: "unavailable" }))
+      );
+    } finally {
+      setIsLoadingSlots(false);
+    }
   }, []);
 
   // Effect to fetch slots when date changes
   useEffect(() => {
     if (formData.date) {
-        fetchTimeSlots(formData.date);
-        // Reset timeSlot when date changes
-        setFormData(prev => ({ ...prev, timeSlot: "" })); 
+      fetchTimeSlots(formData.date);
+      // Reset timeSlot when date changes
+      setFormData((prev) => ({ ...prev, timeSlot: "" }));
     } else {
-        // If no date, set all slots as unavailable
-        setTimeSlots(DEFAULT_TIME_SLOTS.map(s => ({...s, status: "unavailable"})));
+      // If no date, set all slots as unavailable
+      setTimeSlots(
+        DEFAULT_TIME_SLOTS.map((s) => ({ ...s, status: "unavailable" }))
+      );
     }
   }, [formData.date, fetchTimeSlots]);
-  
+
   const clearErrorMessage = () => setErrorMessage("");
 
   // Custom Date selection handler to also clear time slot
   const handleDateSelect = (date: Date) => {
     // This will trigger the useEffect to fetch new slots and clear timeSlot
-    setFormData({ ...formData, date, timeSlot: "" }); 
+    setFormData({ ...formData, date, timeSlot: "" });
     setActivePicker(null);
-  }
-
+  };
 
   const handleBooking = async () => {
     // 1. Client-Side Validation (using toast)
     if (!formData.name.trim()) {
-        setErrorMessage("Please enter your name.");
-        return;
+      setErrorMessage("Please enter your name.");
+      return;
     }
     // Simple 10-digit mobile number validation
-    if (!/^\d{10}$/.test(formData.mobile || "")) { 
-        setErrorMessage("Please enter a valid 10-digit Whatsapp Number.");
-        return;
+    if (!/^\d{10}$/.test(formData.mobile || "")) {
+      setErrorMessage("Please enter a valid 10-digit Whatsapp Number.");
+      return;
     }
     if (!formData.date) {
       setErrorMessage("Please select a date.");
       return;
     }
     if (!formData.timeSlot) {
-        setErrorMessage("Please select a time slot.");
-        return;
+      setErrorMessage("Please select a time slot.");
+      return;
     }
     if (!formData.people || formData.people < 1) {
-        setErrorMessage("Please select the number of people.");
-        return;
+      setErrorMessage("Please select the number of people.");
+      return;
     }
     if (!selectedPlanId) {
-        setErrorMessage("Please select a ride plan.");
-        return;
+      setErrorMessage("Please select a ride plan.");
+      return;
     }
     if (!acceptedTerms) {
-        setErrorMessage("You must agree to the Terms & Conditions and Privacy Policy.");
-        return;
+      setErrorMessage(
+        "You must agree to the Terms & Conditions and Privacy Policy."
+      );
+      return;
     }
 
     setIsLoading(true);
     const selectedPlan = plans.find((p) => p.id === selectedPlanId);
 
     if (!selectedPlan) {
-        setIsLoading(false);
-        setErrorMessage("Selected plan not found.");
-        return;
+      setIsLoading(false);
+      setErrorMessage("Selected plan not found.");
+      return;
     }
 
     try {
       // Re-check slot availability locally before API submission (API will also check)
-      const slotIsAvailable = timeSlots.find(s => s.time === formData.timeSlot)?.status === "available";
+      const slotIsAvailable =
+        timeSlots.find((s) => s.time === formData.timeSlot)?.status ===
+        "available";
       if (!slotIsAvailable) {
-          throw new Error("The selected time slot is no longer available. Please select another slot.");
+        throw new Error(
+          "The selected time slot is no longer available. Please select another slot."
+        );
       }
-      
+
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -224,12 +247,18 @@ const getLocalFormattedDate = (date: Date): string => {
           pricePerPerson: selectedPlan.price,
         }),
       });
-
+      if (response.status === 401) {
+        setIsAuthOpen(true);
+        setIsLoading(false);
+        return;
+      }
       if (!response.ok) {
         const error = await response.json();
         // Server-side check for 409 Conflict (slot unavailable)
         if (response.status === 409) {
-            throw new Error("Sorry, this time slot was just booked. Please choose another.");
+          throw new Error(
+            "Sorry, this time slot was just booked. Please choose another."
+          );
         }
         throw new Error(error.error || "Booking failed");
       }
@@ -246,7 +275,7 @@ const getLocalFormattedDate = (date: Date): string => {
 
       // Redirect to Thank You page with data
       router.push(`/thank-you?${params.toString()}`);
-      
+
       // Reset form
       setFormData({
         name: "",
@@ -257,7 +286,11 @@ const getLocalFormattedDate = (date: Date): string => {
       });
       setSelectedPlanId(null);
     } catch (error: any) {
-      console.error("Booking error:", error);
+      console.error("Booking error:", error.response);
+      if (error?.response?.status === 401) {
+        setIsAuthOpen(true);
+        return; // stop further execution
+      }
       setErrorMessage(error.message || "Failed to create booking."); // Set error message for toast
     } finally {
       setIsLoading(false);
@@ -269,119 +302,117 @@ const getLocalFormattedDate = (date: Date): string => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
+
       <PageBreadcrumb
         items={[{ label: "Home", href: "/" }, { label: "Booking" }]}
       />
-      
+
       {/* Toast Notification */}
       <ToastNotification message={errorMessage} onClose={clearErrorMessage} />
-      
-      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-rows-1 lg:grid-cols-2 gap-6">
-        {/* Booking Form Card */}
-        <div className="bg-gradient-to-br from-[#055A3A] to-[#044d32] rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-visible h-fit">
-          {/* Decorative Background Elements */}
-          <div className="absolute inset-0 opacity-10 overflow-hidden rounded-3xl pointer-events-none">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+
+      {/* MAIN LAYOUT */}
+      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ================= BOOKING FORM ================= */}
+        <div className="bg-gradient-to-br from-[#055A3A] to-[#044d32] rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl relative h-fit">
+          {/* Decorative Elements */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none rounded-3xl">
+            <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 md:w-96 md:h-96 bg-white rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
           </div>
 
           <div className="relative z-10">
-            <h1 className="text-4xl md:text-5xl text-white font-bold mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl text-white font-bold mb-3">
               Book Your Ride Here!
             </h1>
-            <p className="text-white/80 mb-10 text-lg">
+            <p className="text-white/80 mb-8 text-base sm:text-lg">
               Select your preferred date, time, and number of guests
             </p>
 
-            {/* Changed to grid-cols-1 to stack inputs vertically like the design image */}
-            <div className="grid grid-cols-1 gap-6">
-              <div className="relative">
-                <input
-                  value={formData?.name}
-                  placeholder="Name"
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white text-left hover:bg-white/20 hover:border-white/50 transition-all duration-300 flex items-center justify-between group"
-                />
-              </div>
-              <div className="relative">
-                <input
-                  value={formData?.mobile}  
-                  onChange={(e) =>
-                    setFormData({ ...formData, mobile: e.target.value })
-                  }
-                  placeholder="Whatsapp Number"
-                  className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white text-left hover:bg-white/20 hover:border-white/50 transition-all duration-300 flex items-center justify-between group"
-                />
-              </div>
-              {/* Date Input */}
+            <div className="grid grid-cols-1 gap-5">
+              {/* NAME */}
+              <input
+                value={formData?.name}
+                placeholder="Name"
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-3 sm:py-4 text-white placeholder-white/70"
+              />
+
+              {/* MOBILE */}
+              <input
+                value={formData?.mobile}
+                placeholder="Whatsapp Number"
+                onChange={(e) =>
+                  setFormData({ ...formData, mobile: e.target.value })
+                }
+                className="w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-3 sm:py-4 text-white placeholder-white/70"
+              />
+
+              {/* DATE */}
               <div className="relative">
                 <button
                   onClick={() => togglePicker("date")}
-                  className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white text-left hover:bg-white/20 hover:border-white/50 transition-all duration-300 flex items-center justify-between group"
+                  className="w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-3 sm:py-4 text-white flex justify-between items-center"
                 >
                   <span
                     className={formData.date ? "font-medium" : "text-white/70"}
                   >
                     {formatDate(formData.date)}
                   </span>
-                  <Calendar
-                    className="text-white/80 group-hover:scale-110 transition-transform"
-                    size={20}
-                  />
+                  <Calendar size={20} />
                 </button>
+
                 {activePicker === "date" && (
                   <CustomDatePicker
                     selectedDate={formData.date}
-                    onSelect={handleDateSelect} // Use custom handler
+                    onSelect={handleDateSelect}
                     onClose={() => setActivePicker(null)}
                   />
                 )}
               </div>
 
-              {/* Time Input */}
+              {/* TIME */}
               <div className="relative">
                 <button
                   onClick={() => togglePicker("time")}
-                  disabled={!formData.date || isLoadingSlots} // Disable if no date or loading
-                  className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white text-left hover:bg-white/20 hover:border-white/50 transition-all duration-300 flex items-center justify-between group disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!formData.date || isLoadingSlots}
+                  className="w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-3 sm:py-4 text-white flex justify-between items-center disabled:opacity-50"
                 >
                   <span
                     className={
                       formData.timeSlot ? "font-medium" : "text-white/70"
                     }
                   >
-                    {isLoadingSlots 
-                        ? "Loading slots..." 
-                        : formData.timeSlot || "Choose Time Slot"}
+                    {isLoadingSlots
+                      ? "Loading slots..."
+                      : formData.timeSlot || "Choose Time Slot"}
                   </span>
-                  <Clock
-                    className="text-white/80 group-hover:scale-110 transition-transform"
-                    size={20}
-                  />
+                  <Clock size={20} />
                 </button>
-                {/* Only show time picker if a date is selected and slots are not loading */}
-                {activePicker === "time" && formData.date && !isLoadingSlots && (
-                  <CustomTimePicker
-                    selectedTime={formData.timeSlot}
-                    onSelect={(time) => {
-                      setFormData({ ...formData, timeSlot: time });
-                      setActivePicker(null);
-                    }}
-                    onClose={() => setActivePicker(null)}
-                    timeSlots={timeSlots} // Pass the fetched time slots
-                  />
-                )}
+
+                {activePicker === "time" &&
+                  formData.date &&
+                  !isLoadingSlots && (
+                    <CustomTimePicker
+                      selectedTime={formData.timeSlot}
+                      onSelect={(time) => {
+                        setFormData({ ...formData, timeSlot: time });
+                        setActivePicker(null);
+                      }}
+                      onClose={() => setActivePicker(null)}
+                      timeSlots={timeSlots}
+                    />
+                  )}
               </div>
 
-              {/* People Input */}
+              {/* PEOPLE */}
               <div className="relative">
                 <button
                   onClick={() => togglePicker("people")}
-                  className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white text-left hover:bg-white/20 hover:border-white/50 transition-all duration-300 flex items-center justify-between group"
+                  className="w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-3 sm:py-4 text-white flex justify-between items-center"
                 >
                   <span
                     className={
@@ -394,11 +425,9 @@ const getLocalFormattedDate = (date: Date): string => {
                         }`
                       : "No. of People"}
                   </span>
-                  <Users
-                    className="text-white/80 group-hover:scale-110 transition-transform"
-                    size={20}
-                  />
+                  <Users size={20} />
                 </button>
+
                 {activePicker === "people" && (
                   <CustomPeoplePicker
                     selectedPeople={formData.people}
@@ -409,70 +438,57 @@ const getLocalFormattedDate = (date: Date): string => {
                   />
                 )}
               </div>
-              <div className="mt-4 flex items-start gap-3">
+
+              {/* TERMS */}
+              <div className="flex gap-3 text-sm text-white/80">
                 <input
                   type="checkbox"
-                  id="terms"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 h-4 w-4 accent-green-400 cursor-pointer"
+                  className="accent-green-400 mt-1"
                 />
-
-                <label
-                  htmlFor="terms"
-                  className="text-sm text-white/80 leading-relaxed cursor-pointer"
-                >
+                <span>
                   I agree to the{" "}
                   <a
                     href="/terms-and-conditions"
-                    target="_blank"
-                    className="text-green-400 underline hover:text-green-300"
-                    onClick={(e) => e.stopPropagation()}
+                    className="underline text-green-400"
                   >
-                    Terms & Conditions
+                    Terms
                   </a>{" "}
                   and{" "}
                   <a
                     href="/privacy-policy"
-                    target="_blank"
-                    className="text-green-400 underline hover:text-green-300"
-                    onClick={(e) => e.stopPropagation()}
+                    className="underline text-green-400"
                   >
                     Privacy Policy
                   </a>
-                </label>
+                </span>
               </div>
 
-              {/* Submit Button */}
+              {/* SUBMIT */}
               <button
                 onClick={handleBooking}
                 disabled={isLoading || !acceptedTerms}
-                className="bg-white text-[#055A3A] font-bold rounded-2xl px-6 py-4 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 group disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                className="bg-white text-[#055A3A] font-bold rounded-2xl py-3 sm:py-4 mt-2 md:hover:scale-105 transition disabled:opacity-50"
               >
-                <span>{isLoading ? "Processing..." : "Book Your Ride"}</span>
-                {!isLoading && (
-                  <ArrowRight
-                    className="group-hover:translate-x-1 transition-transform"
-                    size={20}
-                  />
-                )}
+                {isLoading ? "Processing..." : "Book Your Ride"}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Popular Plans Grid */}
+        {/* ================= PLANS ================= */}
         <div>
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
               Popular Plans
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-base sm:text-lg">
               Choose the perfect experience for your adventure
             </p>
           </div>
 
-          <div className="grid grid-row-1 md:grid-row-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {plans.map((plan) => (
               <div
                 key={plan.id}
@@ -537,10 +553,10 @@ const getLocalFormattedDate = (date: Date): string => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-6 border-t-2 border-gray-100">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between pt-6 border-t-2 border-gray-100 gap-y-2">
                   <div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-gray-900">
+                      <span className="text:3xl lg:text-4xl font-bold text-gray-900">
                         ₹{plan.price}
                       </span>
                       <span className="text-gray-500 text-sm">/person</span>
@@ -552,7 +568,7 @@ const getLocalFormattedDate = (date: Date): string => {
                       setSelectedPlanId(plan.id);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className="bg-[#055A3A] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#044d32] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 group/btn"
+                    className="bg-[#055A3A] text-white font-bold px-8 py-2 lg:py-4 rounded-2xl hover:bg-[#044d32] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 group/btn"
                   >
                     <span>Select Plan</span>
                     <ArrowRight
@@ -574,6 +590,13 @@ const getLocalFormattedDate = (date: Date): string => {
           bookingData={bookingData}
         />
       )}
+      <Modal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        title="Welcome Back"
+      >
+        <AuthForm onSuccess={() => setIsAuthOpen(false)} />
+      </Modal>
       <Footer />
     </div>
   );
