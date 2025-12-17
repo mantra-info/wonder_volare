@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       user = await User.create({ email });
     }
 
-    const accessToken = generateAccessToken(user._id.toString());
+    const accessToken = generateAccessToken(user._id.toString(),"user");
     const refreshToken = generateRefreshToken(user._id.toString());
 
     user.refreshToken = refreshToken;

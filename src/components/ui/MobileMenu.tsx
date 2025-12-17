@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -24,7 +24,7 @@ export default function MobileMenu({
   onLogoutClick,
 }: MobileMenuProps) {
   // Animation variants for the container
-  const menuVariants = {
+  const menuVariants:Variants = {
     closed: {
       opacity: 0,
       scale: 0,

@@ -24,9 +24,23 @@ const navItems = [
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
-const sidebarVariants = {
-  expanded: { width: 280, transition: { duration: 0.3, ease: 'easeInOut' } },
-  collapsed: { width: 80, transition: { duration: 0.3, ease: 'easeInOut' } },
+import { Variants } from "framer-motion";
+
+const sidebarVariants: Variants = {
+  expanded: {
+    width: 280,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut",
+    },
+  },
+  collapsed: {
+    width: 80,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut",
+    },
+  },
 };
 
 const overlayVariants = {

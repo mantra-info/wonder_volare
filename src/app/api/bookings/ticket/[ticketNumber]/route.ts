@@ -6,7 +6,7 @@ import { verify } from "jsonwebtoken";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { ticketNumber: string } }
+  props: { params: Promise<{ ticketNumber: string }> }
 ) {
   try {
     await connect();
@@ -26,7 +26,11 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const ticketNumber = params.ticketNumber;
+   const params = await props.params;
+  
+  // 2. Now you can use ticketNumber
+  const { ticketNumber } = params;
+
 
     // Find ticket using ticketNumber
     const ticket = await Ticket.findOne({ ticketNumber });
