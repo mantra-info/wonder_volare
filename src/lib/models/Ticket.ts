@@ -1,4 +1,3 @@
-// models/Ticket.ts
 import mongoose, { Schema, model, models } from "mongoose";
 
 interface ITicket {
@@ -12,20 +11,21 @@ interface ITicket {
   totalPrice: number;
   qrCode: string;
   ticketNumber: string;
-  status: "confirmed" | "cancelled" | "completed";
+  status: "confirmed" | "cancelled" | "completed" | "pending_payment"; // Added pending
   createdAt: Date;
+  
+  // 💳 PAYMENT DETAILS (New Fields)
+  payment: {
+    razorpayOrderId: string;
+    razorpayPaymentId?: string;
+    razorpaySignature?: string;
+    amountPaid: number;
+    status: "success" | "failed" | "pending";
+  };
 
   delivery: {
-    email: {
-      sent: boolean;
-      sentAt?: Date;
-      attempts: number;
-    };
-    whatsapp: {
-      sent: boolean;
-      sentAt?: Date;
-      attempts: number;
-    };
+    email: { sent: boolean; sentAt?: Date; attempts: number };
+    whatsapp: { sent: boolean; sentAt?: Date; attempts: number };
   };
 }
 
@@ -38,16 +38,24 @@ const ticketSchema = new Schema<ITicket>({
   numberOfPeople: { type: Number, required: true },
   pricePerPerson: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
-  qrCode: { type: String, required: true },
+  qrCode: { type: String }, // Made optional initially
   ticketNumber: { type: String, required: true, unique: true },
   status: {
     type: String,
-    enum: ["confirmed", "cancelled", "completed"],
-    default: "confirmed",
+    enum: ["confirmed", "cancelled", "completed", "pending_payment"],
+    default: "pending_payment",
   },
   createdAt: { type: Date, default: Date.now },
 
-  // 🔑 DELIVERY TRACKING
+  // 💳 PAYMENT SCHEMA
+  payment: {
+    razorpayOrderId: { type: String, required: true },
+    razorpayPaymentId: { type: String },
+    razorpaySignature: { type: String },
+    amountPaid: { type: Number, default: 0 },
+    status: { type: String, enum: ["success", "failed", "pending"], default: "pending" },
+  },
+
   delivery: {
     email: {
       sent: { type: Boolean, default: false },
@@ -64,4 +72,3 @@ const ticketSchema = new Schema<ITicket>({
 
 const Ticket = models.Ticket || model<ITicket>("Ticket", ticketSchema);
 export default Ticket;
-  

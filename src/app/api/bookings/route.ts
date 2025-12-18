@@ -4,6 +4,7 @@ import connect from "../../../lib/mongodb";
 import Ticket from "../../../lib/models/Ticket";
 import { verify } from "jsonwebtoken";
 import User from "@/lib/models/User";
+import crypto from "crypto"; 
 
 // Define all possible time slots for availability check
 const ALL_TIME_SLOTS = [
@@ -60,24 +61,27 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { planId, planName, date, timeSlot, numberOfPeople, pricePerPerson } =
-      body;
+const { 
+      // Booking Details
+      planId, planName, date, timeSlot, numberOfPeople, pricePerPerson,
+      // Payment Details (New)
+      razorpay_order_id, razorpay_payment_id, razorpay_signature 
+    } = body;
 
     // Validate required fields
-    if (
-      !planId ||
-      !planName ||
-      !date ||
-      !timeSlot ||
-      !numberOfPeople ||
-      !pricePerPerson
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    if (!planId || !date || !timeSlot || !razorpay_payment_id || !razorpay_signature) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-    
+
+     const bodyData = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(bodyData.toString())
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return NextResponse.json({ error: "Invalid Payment Signature" }, { status: 400 });
+    }
     // Server-side check for availability before creating the ticket
     const targetDate = new Date(date);
     // Set time bounds for the query
@@ -104,7 +108,7 @@ export async function POST(req: NextRequest) {
     const ticketNumber = generateTicketNumber();
     const totalPrice = pricePerPerson * numberOfPeople;
 
-    const ticketData = {
+   const ticketData = {
       userEmail,
       planId,
       planName,
@@ -114,9 +118,18 @@ export async function POST(req: NextRequest) {
       pricePerPerson,
       totalPrice,
       ticketNumber,
-      qrCode: "", // Will be generated on frontend
+      qrCode: "",
+      status: "confirmed", // Set to confirmed now that payment is verified
+      
+      // Save Payment Info
+      payment: {
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+        amountPaid: totalPrice,
+        status: "success"
+      }
     };
-
     ticketData.qrCode = generateQRData(ticketData);
 
     // Save to database

@@ -28,6 +28,20 @@ interface TimeSlot {
   status: "available" | "unavailable";
 }
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+ const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 // Mock initial/default time slots (all unavailable before a date is selected)
 const DEFAULT_TIME_SLOTS: TimeSlot[] = [
   { time: "06.00am - 07.00am", status: "unavailable" },
@@ -181,13 +195,13 @@ const BookingPage: React.FC = () => {
     setActivePicker(null);
   };
 
-  const handleBooking = async () => {
-    // 1. Client-Side Validation (using toast)
+ const handleBooking = async () => {
+    // 1. Client-Side Validation
     if (!formData.name.trim()) {
       setErrorMessage("Please enter your name.");
       return;
     }
-    // Simple 10-digit mobile number validation
+    // Mobile validation
     if (!/^\d{10}$/.test(formData.mobile || "")) {
       setErrorMessage("Please enter a valid 10-digit Whatsapp Number.");
       return;
@@ -209,90 +223,164 @@ const BookingPage: React.FC = () => {
       return;
     }
     if (!acceptedTerms) {
-      setErrorMessage(
-        "You must agree to the Terms & Conditions and Privacy Policy."
-      );
+      setErrorMessage("You must agree to the Terms & Conditions and Privacy Policy.");
       return;
     }
 
-    setIsLoading(true);
     const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-
     if (!selectedPlan) {
-      setIsLoading(false);
       setErrorMessage("Selected plan not found.");
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      // Re-check slot availability locally before API submission (API will also check)
-      const slotIsAvailable =
-        timeSlots.find((s) => s.time === formData.timeSlot)?.status ===
-        "available";
-      if (!slotIsAvailable) {
-        throw new Error(
-          "The selected time slot is no longer available. Please select another slot."
-        );
+      // 2. Load Razorpay Script
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        throw new Error("Razorpay SDK failed to load. Please check your connection.");
       }
 
-      const response = await fetch("/api/bookings", {
+      // 3. Re-check slot availability locally
+      const slotIsAvailable = timeSlots.find(
+        (s) => s.time === formData.timeSlot
+      )?.status === "available";
+
+      if (!slotIsAvailable) {
+        throw new Error("The selected time slot is no longer available. Please select another slot.");
+      }
+
+      // 4. Create Order (Server-Side)
+      // This ensures the price is calculated securely on the backend
+      const orderRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          planId: selectedPlan.id,
-          planName: selectedPlan.name,
-          date: formData.date.toISOString(),
-          timeSlot: formData.timeSlot,
-          numberOfPeople: formData.people,
-          pricePerPerson: selectedPlan.price,
+          planId: selectedPlanId,
+          guests: formData.people,
         }),
       });
-      if (response.status === 401) {
+
+      if (orderRes.status === 401) {
         setIsAuthOpen(true);
         setIsLoading(false);
         return;
       }
-      if (!response.ok) {
-        const error = await response.json();
-        // Server-side check for 409 Conflict (slot unavailable)
-        if (response.status === 409) {
-          throw new Error(
-            "Sorry, this time slot was just booked. Please choose another."
-          );
-        }
-        throw new Error(error.error || "Booking failed");
+
+      if (!orderRes.ok) {
+        throw new Error("Could not initiate payment. Please try again.");
       }
 
-      const result = await response.json();
-      const params = new URLSearchParams({
-        id: result?.ticket?.ticketNumber,
-        name: formData.name,
-        phone: formData.mobile,
-        date: formData.date.toISOString(),
-        time: formData.timeSlot,
-        guests: formData.people?.toString() || "0",
+      const orderData = await orderRes.json();
+
+      // 5. Initialize Razorpay Options
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Ensure this env variable exists
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Wonder Volare Munnar",
+        description: `${selectedPlan.name} Date: ${formatDate(formData.date)}`,
+        order_id: orderData.orderId, // Order ID from your backend
+        prefill: {
+          name: formData.name,
+          contact: formData.mobile,
+          email: user?.email || "", 
+        },
+        theme: {
+          color: "#055A3A",
+        },
+        // 6. Success Handler (Triggered after payment)
+        handler: async function (response: any) {
+          try {
+            // Show loading again while verifying
+            setIsLoading(true);
+
+            // 7. Verify Payment & Save Booking (Server-Side)
+            const verifyRes = await fetch("/api/bookings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                // Payment Details
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                
+                // Booking Details
+                planId: selectedPlan.id,
+                planName: selectedPlan.name,
+                date: formData.date!.toISOString(), // We know date exists due to validation
+                timeSlot: formData.timeSlot,
+                numberOfPeople: formData.people,
+                pricePerPerson: orderData.pricePerPerson, // Use price confirmed by create-order API
+              }),
+            });
+
+            const verifyResult = await verifyRes.json();
+
+            if (!verifyRes.ok) {
+              // Handle specific conflict error (409)
+              if (verifyRes.status === 409) {
+                throw new Error("Slot was taken during payment. Contact support for refund.");
+              }
+              throw new Error(verifyResult.error || "Payment successful, but booking verification failed.");
+            }
+
+            // 8. Redirect to Thank You Page
+            const params = new URLSearchParams({
+              id: verifyResult.ticket.ticketNumber,
+              name: formData.name,
+              phone: formData.mobile,
+              date: formData.date!.toISOString(),
+              time: formData.timeSlot,
+              guests: formData.people?.toString() || "0",
+            });
+
+            router.push(`/thank-you?${params.toString()}`);
+
+            // Reset form
+            setFormData({
+              name: "",
+              mobile: "",
+              date: null,
+              timeSlot: "",
+              people: null,
+            });
+            setSelectedPlanId(null);
+
+          } catch (verifyError: any) {
+            console.error("Verification Error:", verifyError);
+            setErrorMessage(verifyError.message || "Booking verification failed.");
+            setIsLoading(false);
+          }
+        },
+      };
+
+      // 9. Open Payment Modal
+      const paymentObject = new window.Razorpay(options);
+      
+      paymentObject.on("payment.failed", function (response: any) {
+        console.error("Payment Failed:", response.error);
+        setErrorMessage(`Payment Failed: ${response.error.description}`);
+        setIsLoading(false);
       });
 
-      // Redirect to Thank You page with data
-      router.push(`/thank-you?${params.toString()}`);
+      paymentObject.open();
+      
+      // Note: We don't set isLoading(false) here immediately because we want 
+      // the button to stay disabled while the modal is open. 
+      // Razorpay doesn't have a reliable "modal closed" event for "cancelled by user",
+      // but usually, it's fine to leave it or use a timeout to reset if needed. 
+      // For better UX, you can set it to false if you want the user to be able to click again immediately.
+      setIsLoading(false); 
 
-      // Reset form
-      setFormData({
-        name: "",
-        mobile: "",
-        date: null,
-        timeSlot: "",
-        people: null,
-      });
-      setSelectedPlanId(null);
     } catch (error: any) {
-      console.error("Booking error:", error.response);
+      console.error("Booking Logic Error:", error);
       if (error?.response?.status === 401) {
         setIsAuthOpen(true);
-        return; // stop further execution
+      } else {
+        setErrorMessage(error.message || "Something went wrong.");
       }
-      setErrorMessage(error.message || "Failed to create booking."); // Set error message for toast
-    } finally {
       setIsLoading(false);
     }
   };
