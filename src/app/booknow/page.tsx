@@ -488,7 +488,7 @@ const BookingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-rows-1 gap-8">
             {plans.map((plan) => (
               <div
                 key={plan.id}

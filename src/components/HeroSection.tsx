@@ -27,24 +27,29 @@ export default function HeroSection() {
     <>
       {/* --- Background Slider --- */}
       <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={bgIndex}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={BACKGROUND_IMAGES[bgIndex]}
-              alt="Sky Background"
-              fill
-              className="object-cover"
-              priority
-            />
-          </motion.div>
-        </AnimatePresence>
+       <AnimatePresence mode="popLayout">
+    <motion.div
+      key={bgIndex}
+      initial={{ opacity: 0, scale: 1.1 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 1.5 }}
+      className="absolute inset-0"
+    >
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src={`/Wonder_v_banner.mp4`} type="video/mp4" />
+      </video>
+    </motion.div>
+  </AnimatePresence>
+
+        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
       </div>
 
