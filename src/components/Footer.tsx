@@ -11,6 +11,7 @@ import {
   Mail,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 // --- Custom Balloon Logo SVG (Kept for the brand visual) ---
 const WonderVolareLogo = () => (
@@ -50,20 +51,24 @@ const Footer = () => {
             <ul className="space-y-4 text-white/80 font-light">
               {[
                 "Home",
-                "About",
-                "Blogs",
+                "About Us",
                 "Contact Us",
                 "Privacy Policy",
+                "Refund Policy",
                 "Terms and Conditions",
-              ].map((link) => (
-                <motion.li
-                  key={link}
-                  whileHover={{ x: 5, color: "#fff" }}
-                  className="cursor-pointer transition-colors"
-                >
-                  {link}
-                </motion.li>
-              ))}
+              ].map((link) => {
+                const slug = link.toLowerCase().replace(/\s+/g, "-");
+
+                return (
+                  <motion.li
+                    key={link}
+                    whileHover={{ x: 5, color: "#fff" }}
+                    className="cursor-pointer transition-colors"
+                  >
+                    <Link href={`/${slug}`}>{link}</Link>
+                  </motion.li>
+                );
+              })}
             </ul>
           </div>
 

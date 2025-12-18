@@ -11,7 +11,7 @@ interface BookRideButtonProps {
 
 const BookRideButton: React.FC<BookRideButtonProps> = ({
   label = "Book Your Ride Now!",
-  href = "/booking",
+  href = "/booknow",
   mode = "floating",
   className = "",
 }) => {
