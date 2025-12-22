@@ -88,7 +88,7 @@ const WhyChooseUs = () => {
     <section className="bg-[#055A3A] py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 lg:mb-16">
           <h2 className="text-4xl md:text-5xl text-white font-normal mb-6">
             Why Choose Us?
           </h2>
@@ -103,12 +103,12 @@ const WhyChooseUs = () => {
               className="group relative flex flex-col p-6 border border-white/30 rounded-3xl transition-all duration-300 hover:scale-105 hover:bg-white/5 hover:border-white/40"
             >
               {/* Icon Container - Fixed Height */}
-              <div className="mb-6 text-white/70 h-12 flex items-start">
+              <div className="mb-3 lg:mb-6 text-white/70 h-12 flex items-start">
                 {renderIcon(feature.icon)}
               </div>
 
               {/* Title - Fixed Height */}
-              <h4 className="text-xl text-white font-normal leading-tight mb-4 h-14 flex items-start">
+              <h4 className="text-xl text-white font-normal leading-tight mb-3 lg:h-14 flex items-start">
                 {feature.title}
               </h4>
 
