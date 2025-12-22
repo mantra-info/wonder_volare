@@ -27,13 +27,14 @@ export const CustomTimePicker: React.FC<TimePickerProps> = ({
     onSelect(tempSelected);
     onClose();
   };
+  
 
   return (
     <div className="absolute top-full left-0 mt-2 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-6 z-[100] w-[340px] md:w-[400px] border border-gray-100 animate-in fade-in zoom-in duration-200">
-      
       {/* Time Slots Grid */}
       <div className="flex flex-wrap gap-3 mb-8">
-        {timeSlots.map((slot) => { // Use timeSlots prop
+        {timeSlots.map((slot) => {
+          // Use timeSlots prop
           const isSelected = tempSelected === slot.time;
           const isUnavailable = slot.status === "unavailable";
 

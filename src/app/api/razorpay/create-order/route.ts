@@ -11,8 +11,8 @@ const razorpay = new Razorpay({
 });
 
 const SERVER_PLANS: Record<number, { name: string; price: number }> = {
-  1: { name: "Classic Sunrise Ride", price: 1500 },
-  2: { name: "Premium Couple Ride", price: 3999 },
+  1: { name: "Classic Sunrise Ride", price: 1 },
+  2: { name: "Premium Couple Ride", price: 2 },
 };
 
 export async function POST(req: NextRequest) {
