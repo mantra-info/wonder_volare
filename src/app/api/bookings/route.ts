@@ -208,7 +208,7 @@ export async function GET(req: NextRequest) {
           $gte: startOfDay,
           $lte: endOfDay,
         },
-        status: { $ne: "cancelled" }, // Only count non-cancelled tickets as booked
+        status: { $nin: ["cancelled", "pending_payment"] } // Only count non-cancelled tickets as booked
       }).select("timeSlot");
 
       const bookedSlots = bookedTickets.map((ticket) => ticket.timeSlot);
