@@ -101,13 +101,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    // Server-side check for availability before creating the ticket
     const targetDate = new Date(date);
-    // Set time bounds for the query
+
+    // IST start (00:00 IST)
     const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    startOfDay.setUTCHours(18, 30, 0, 0);
+    startOfDay.setUTCDate(startOfDay.getUTCDate() - 1);
+
+    // IST end (23:59 IST)
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setUTCHours(18, 29, 59, 999);
+    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
     // Check if the slot is already booked for this date
     const existingBooking = await Ticket.findOne({
