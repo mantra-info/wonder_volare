@@ -13,7 +13,7 @@ interface ITicket {
   ticketNumber: string;
   status: "confirmed" | "cancelled" | "completed" | "pending_payment"; // Added pending
   createdAt: Date;
-  
+
   // 💳 PAYMENT DETAILS (New Fields)
   payment: {
     razorpayOrderId: string;
@@ -22,7 +22,7 @@ interface ITicket {
     amountPaid: number;
     status: "success" | "failed" | "pending";
   };
-
+  lockedAt: Date;
   delivery: {
     email: { sent: boolean; sentAt?: Date; attempts: number };
     whatsapp: { sent: boolean; sentAt?: Date; attempts: number };
@@ -53,9 +53,13 @@ const ticketSchema = new Schema<ITicket>({
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
     amountPaid: { type: Number, default: 0 },
-    status: { type: String, enum: ["success", "failed", "pending"], default: "pending" },
+    status: {
+      type: String,
+      enum: ["success", "failed", "pending"],
+      default: "pending",
+    },
   },
-
+  lockedAt: { type: Date, default: Date.now },
   delivery: {
     email: {
       sent: { type: Boolean, default: false },

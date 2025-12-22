@@ -4,7 +4,7 @@ import connect from "../../../lib/mongodb";
 import Ticket from "../../../lib/models/Ticket";
 import { verify } from "jsonwebtoken";
 import User from "@/lib/models/User";
-import crypto from "crypto"; 
+import crypto from "crypto";
 
 // Define all possible time slots for availability check
 const ALL_TIME_SLOTS = [
@@ -61,26 +61,45 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-const { 
+    const {
       // Booking Details
-      planId, planName, date, timeSlot, numberOfPeople, pricePerPerson,
+      planId,
+      planName,
+      date,
+      timeSlot,
+      numberOfPeople,
+      pricePerPerson,
       // Payment Details (New)
-      razorpay_order_id, razorpay_payment_id, razorpay_signature 
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
     } = body;
 
     // Validate required fields
-    if (!planId || !date || !timeSlot || !razorpay_payment_id || !razorpay_signature) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !planId ||
+      !date ||
+      !timeSlot ||
+      !razorpay_payment_id ||
+      !razorpay_signature
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-     const bodyData = razorpay_order_id + "|" + razorpay_payment_id;
+    const bodyData = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
       .update(bodyData.toString())
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json({ error: "Invalid Payment Signature" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid Payment Signature" },
+        { status: 400 }
+      );
     }
     // Server-side check for availability before creating the ticket
     const targetDate = new Date(date);
@@ -89,26 +108,26 @@ const {
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
-    
+
     // Check if the slot is already booked for this date
     const existingBooking = await Ticket.findOne({
-        date: { $gte: startOfDay, $lte: endOfDay },
-        timeSlot: timeSlot,
-        status: { $ne: 'cancelled' } // Assuming 'cancelled' tickets free up slots
+      date: { $gte: startOfDay, $lte: endOfDay },
+      timeSlot: timeSlot,
+      status: "confirmed",
     });
-    
+
     if (existingBooking) {
-        return NextResponse.json(
-            { error: "The selected time slot is already booked." },
-            { status: 409 } // 409 Conflict: Slot Unavailable
-        );
+      return NextResponse.json(
+        { error: "The selected time slot is already booked." },
+        { status: 409 } // 409 Conflict: Slot Unavailable
+      );
     }
 
     // Generate ticket number and QR data
     const ticketNumber = generateTicketNumber();
     const totalPrice = pricePerPerson * numberOfPeople;
 
-   const ticketData = {
+    const ticketData = {
       userEmail,
       planId,
       planName,
@@ -120,15 +139,15 @@ const {
       ticketNumber,
       qrCode: "",
       status: "confirmed", // Set to confirmed now that payment is verified
-      
+
       // Save Payment Info
       payment: {
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
         razorpaySignature: razorpay_signature,
         amountPaid: totalPrice,
-        status: "success"
-      }
+        status: "success",
+      },
     };
     ticketData.qrCode = generateQRData(ticketData);
 
@@ -168,18 +187,20 @@ export async function GET(req: NextRequest) {
     // --- Availability Check Logic (Checks for slots on a specific date) ---
     if (dateQuery) {
       const targetDate = new Date(dateQuery);
-      
+
       // Validate date
       if (isNaN(targetDate.getTime())) {
-         return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid date format" },
+          { status: 400 }
+        );
       }
-      
+
       // Set time bounds for the query
       const startOfDay = new Date(targetDate);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(targetDate);
       endOfDay.setHours(23, 59, 59, 999);
-      
 
       // 1. Find all booked slots for the selected date
       const bookedTickets = await Ticket.find({
@@ -187,7 +208,7 @@ export async function GET(req: NextRequest) {
           $gte: startOfDay,
           $lte: endOfDay,
         },
-        status: { $ne: 'cancelled' } // Only count non-cancelled tickets as booked
+        status: { $ne: "cancelled" }, // Only count non-cancelled tickets as booked
       }).select("timeSlot");
 
       const bookedSlots = bookedTickets.map((ticket) => ticket.timeSlot);

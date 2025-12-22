@@ -33,15 +33,15 @@ declare global {
     Razorpay: any;
   }
 }
- const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 // Mock initial/default time slots (all unavailable before a date is selected)
 const DEFAULT_TIME_SLOTS: TimeSlot[] = [
   { time: "06.00am - 07.00am", status: "unavailable" },
@@ -195,7 +195,7 @@ const BookingPage: React.FC = () => {
     setActivePicker(null);
   };
 
- const handleBooking = async () => {
+  const handleBooking = async () => {
     // 1. Client-Side Validation
     if (!formData.name.trim()) {
       setErrorMessage("Please enter your name.");
@@ -223,7 +223,9 @@ const BookingPage: React.FC = () => {
       return;
     }
     if (!acceptedTerms) {
-      setErrorMessage("You must agree to the Terms & Conditions and Privacy Policy.");
+      setErrorMessage(
+        "You must agree to the Terms & Conditions and Privacy Policy."
+      );
       return;
     }
 
@@ -232,23 +234,27 @@ const BookingPage: React.FC = () => {
       setErrorMessage("Selected plan not found.");
       return;
     }
-
+    if (isLoading) return;
     setIsLoading(true);
 
     try {
       // 2. Load Razorpay Script
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
-        throw new Error("Razorpay SDK failed to load. Please check your connection.");
+        throw new Error(
+          "Razorpay SDK failed to load. Please check your connection."
+        );
       }
 
       // 3. Re-check slot availability locally
-      const slotIsAvailable = timeSlots.find(
-        (s) => s.time === formData.timeSlot
-      )?.status === "available";
+      const slotIsAvailable =
+        timeSlots.find((s) => s.time === formData.timeSlot)?.status ===
+        "available";
 
       if (!slotIsAvailable) {
-        throw new Error("The selected time slot is no longer available. Please select another slot.");
+        throw new Error(
+          "The selected time slot is no longer available. Please select another slot."
+        );
       }
 
       // 4. Create Order (Server-Side)
@@ -257,8 +263,10 @@ const BookingPage: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          planId: selectedPlanId,
+          ...formData,
           guests: formData.people,
+          planId: selectedPlanId,
+          userEmail: user?.email,
         }),
       });
 
@@ -282,10 +290,13 @@ const BookingPage: React.FC = () => {
         name: "Wonder Volare Munnar",
         description: `${selectedPlan.name} Date: ${formatDate(formData.date)}`,
         order_id: orderData.orderId, // Order ID from your backend
+        retry: {
+          enabled: false, // Prevents the "Retry Payment" screen
+        },
         prefill: {
           name: formData.name,
           contact: formData.mobile,
-          email: user?.email || "", 
+          email: user?.email || "",
         },
         theme: {
           color: "#055A3A",
@@ -305,7 +316,7 @@ const BookingPage: React.FC = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                
+
                 // Booking Details
                 planId: selectedPlan.id,
                 planName: selectedPlan.name,
@@ -321,9 +332,14 @@ const BookingPage: React.FC = () => {
             if (!verifyRes.ok) {
               // Handle specific conflict error (409)
               if (verifyRes.status === 409) {
-                throw new Error("Slot was taken during payment. Contact support for refund.");
+                throw new Error(
+                  "Slot was taken during payment. Contact support for refund."
+                );
               }
-              throw new Error(verifyResult.error || "Payment successful, but booking verification failed.");
+              throw new Error(
+                verifyResult.error ||
+                  "Payment successful, but booking verification failed."
+              );
             }
 
             // 8. Redirect to Thank You Page
@@ -347,18 +363,24 @@ const BookingPage: React.FC = () => {
               people: null,
             });
             setSelectedPlanId(null);
-
           } catch (verifyError: any) {
             console.error("Verification Error:", verifyError);
-            setErrorMessage(verifyError.message || "Booking verification failed.");
+            setErrorMessage(
+              verifyError.message || "Booking verification failed."
+            );
             setIsLoading(false);
           }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsLoading(false); // Re-enable button if user closes modal
+          },
         },
       };
 
       // 9. Open Payment Modal
       const paymentObject = new window.Razorpay(options);
-      
+
       paymentObject.on("payment.failed", function (response: any) {
         console.error("Payment Failed:", response.error);
         setErrorMessage(`Payment Failed: ${response.error.description}`);
@@ -366,14 +388,13 @@ const BookingPage: React.FC = () => {
       });
 
       paymentObject.open();
-      
-      // Note: We don't set isLoading(false) here immediately because we want 
-      // the button to stay disabled while the modal is open. 
-      // Razorpay doesn't have a reliable "modal closed" event for "cancelled by user",
-      // but usually, it's fine to leave it or use a timeout to reset if needed. 
-      // For better UX, you can set it to false if you want the user to be able to click again immediately.
-      setIsLoading(false); 
 
+      // Note: We don't set isLoading(false) here immediately because we want
+      // the button to stay disabled while the modal is open.
+      // Razorpay doesn't have a reliable "modal closed" event for "cancelled by user",
+      // but usually, it's fine to leave it or use a timeout to reset if needed.
+      // For better UX, you can set it to false if you want the user to be able to click again immediately.
+      setIsLoading(false);
     } catch (error: any) {
       console.error("Booking Logic Error:", error);
       if (error?.response?.status === 401) {
