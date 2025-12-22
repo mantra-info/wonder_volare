@@ -196,11 +196,15 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      // Set time bounds for the query
+      // IST start (00:00 IST)
       const startOfDay = new Date(targetDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(targetDate);
-      endOfDay.setHours(23, 59, 59, 999);
+      startOfDay.setUTCHours(18, 30, 0, 0);
+      startOfDay.setUTCDate(startOfDay.getUTCDate() - 1);
+
+      // IST end (23:59 IST)
+      const endOfDay = new Date(startOfDay);
+      endOfDay.setUTCHours(18, 29, 59, 999);
+      endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
       // 1. Find all booked slots for the selected date
       const bookedTickets = await Ticket.find({
@@ -208,7 +212,7 @@ export async function GET(req: NextRequest) {
           $gte: startOfDay,
           $lte: endOfDay,
         },
-        status: { $nin: ["cancelled", "pending_payment"] }
+        status: { $nin: ["cancelled", "pending_payment"] },
       }).select("timeSlot");
 
       const bookedSlots = bookedTickets.map((ticket) => ticket.timeSlot);
