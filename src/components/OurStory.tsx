@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 const OurStory = () => {
@@ -779,7 +780,8 @@ const OurStory = () => {
 
         {/* 4. Read More Button */}
         <div className="mt-10">
-          <button className="group flex items-center gap-2 rounded-lg bg-[#2E8B57] px-8 py-3 text-lg font-medium text-white transition-all hover:bg-[#257046] hover:shadow-lg active:scale-95">
+          <Link href="/about-us">
+           <button className="group flex items-center gap-2 rounded-lg bg-[#2E8B57] px-8 py-3 text-lg font-medium text-white transition-all hover:bg-[#257046] hover:shadow-lg active:scale-95">
             <span>Read More</span>
             {/* Diagonal Arrow Icon */}
             <svg
@@ -797,6 +799,8 @@ const OurStory = () => {
               <polyline points="7 7 17 7 17 17"></polyline>
             </svg>
           </button>
+          </Link>
+         
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 // --- Animation Variants ---
 const fadeInUp: Variants = {
@@ -67,7 +68,9 @@ const MomentsGallery = () => {
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + galleryImages.length) % galleryImages.length
+    );
   };
 
   return (
@@ -193,18 +196,20 @@ const MomentsGallery = () => {
       </div>
 
       {/* --- Button --- */}
-         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="text-center"
-        >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.4 }}
+        className="text-center"
+      >
+        <Link href="/gallery">
           <button className="inline-flex items-center gap-2 bg-[#3DA578] hover:bg-[#2e8560] text-white px-8 py-4 rounded-2xl font-medium transition-colors duration-300 shadow-lg shadow-green-900/10">
             Open Gallery
             <ArrowUpRight size={18} />
           </button>
-        </motion.div>
+        </Link>
+      </motion.div>
     </section>
   );
 };
