@@ -6,7 +6,7 @@ import connect from "@/lib/mongodb"; // Ensure this is imported
 import User from "@/lib/models/User";
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!, // Use server-side key
+  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!, // Use server-side key
   key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
@@ -21,11 +21,14 @@ export async function POST(req: NextRequest) {
 
     // 1. Secure Authentication
     const token = req.cookies.get("accessToken")?.value;
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     let userEmail: string;
     try {
-      const decoded = verify(token, process.env.ACCESS_TOKEN_SECRET!) as { userId: string };
+      const decoded = verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
+        userId: string;
+      };
       const user = await User.findById(decoded.userId);
       if (!user) throw new Error();
       userEmail = user.email; // Use email from DB, not from request body
@@ -37,12 +40,13 @@ export async function POST(req: NextRequest) {
 
     // 2. Validate Plan
     const plan = SERVER_PLANS[planId];
-    if (!plan) return NextResponse.json({ error: "Invalid Plan" }, { status: 400 });
+    if (!plan)
+      return NextResponse.json({ error: "Invalid Plan" }, { status: 400 });
 
     // 3. Check for Locking (User-Aware Lock)
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    
-    // We search for a block: 
+
+    // We search for a block:
     // Either a confirmed ticket OR a pending ticket from someone ELSE within the last 10 mins
     const blockReason = await Ticket.findOne({
       date: new Date(date),
@@ -110,6 +114,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Razorpay Order Error:", error);
-    return NextResponse.json({ error: "Could not initiate payment" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Could not initiate payment" },
+      { status: 500 }
+    );
   }
 }
