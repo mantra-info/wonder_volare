@@ -11,54 +11,60 @@ type Testimonial = {
   rating: number;
   text: string;
   avatar: string;
+  title: string;
 };
 
 // --- Data ---
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "Ananya",
-    location: "Kottayam",
+    name: "  Arun & Divya",
+    location: "Kochi",
     rating: 4.8,
-    text: "A magical experience! The sunrise view was unbelievable.",
+    title: "Peaceful, magical, and beautifully managed.",
+    text: " I never imagined Munnar could look this stunning from above! The crew was calm, polite, and made us feel safe throughout.",
     avatar:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: 2,
-    name: "Chethan",
-    location: "Kottayam",
+    name: "Maria J",
+    location: "Thrissur",
     rating: 5.0,
-    text: "The crew was friendly, and everything felt safe and comfortable.",
+    title: "Such a serene experience.",
+    text: " I was nervous at first, but the guide explained everything patiently. Once we lifted, all I could do was smile.",
     avatar:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: 3,
-    name: "Susan",
-    location: "Kottayam",
+    name: " Karthik P",
+    location: "Chennai",
     rating: 4.9,
-    text: "Perfect for our anniversary. The private couple ride was worth every rupee!",
+    title: "Worth every rupee!",
+    text: " Clean, organised, and truly breathtaking. Watching the sunset from above the tea gardens was unforgettable.",
     avatar:
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: 4,
-    name: "Rahul",
-    location: "Kochi",
+    name: "  Sneha R.",
+    location: "Bangalore",
+    title: "So thoughtful and safe.",
     rating: 5.0,
-    text: "Ideally the best way to see the beauty of Kerala. Highly recommended!",
+    text: " Having a guide with us made all the difference. You can tell they love what they do.",
     avatar:
       "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150&auto=format&fit=crop",
   },
-  {
+    {
     id: 5,
-    name: "Meera",
-    location: "Munnar",
-    rating: 4.7,
-    text: "So peaceful. Floating above the clouds was a dream come true.",
+    name: " Nirmal",
+    location: "Delhi",
+    title: "Perfect end to our Munnar trip.",
+    rating: 5.0,
+    text: "Floating quietly while the sky turned orange felt like a dream.",
     avatar:
-      "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=150&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150&auto=format&fit=crop",
   },
 ];
 
@@ -80,7 +86,9 @@ const TestimonialCarousel = () => {
 
   const handleNext = () => {
     if (isMobile) {
-      setCurrentIndex((prev) => (prev >= testimonials.length - 1 ? 0 : prev + 1));
+      setCurrentIndex((prev) =>
+        prev >= testimonials.length - 1 ? 0 : prev + 1
+      );
     } else {
       setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
     }
@@ -88,19 +96,23 @@ const TestimonialCarousel = () => {
 
   const handlePrev = () => {
     if (isMobile) {
-      setCurrentIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
+      setCurrentIndex((prev) =>
+        prev === 0 ? testimonials.length - 1 : prev - 1
+      );
     } else {
       setCurrentIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
     }
   };
 
   // Calculate proper translation
-  const translateX = isMobile ? -(currentIndex * 100) : -(currentIndex * (100 / testimonials.length));
+  const translateX = isMobile
+    ? -(currentIndex * 100)
+    : -(currentIndex * (100 / testimonials.length));
 
   return (
     <section className="relative min-h-[400px] bg-[#055A3A] py-24 px-4 overflow-hidden font-sans">
       {/* --- Background PNG Image --- */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none z-0 "
         style={{
           backgroundImage: "url('/testimonialBackground.png')",
@@ -132,7 +144,7 @@ const TestimonialCarousel = () => {
           <div className="overflow-hidden w-full">
             <div
               className="flex transition-transform duration-500 ease-out"
-              style={{ 
+              style={{
                 transform: `translateX(${translateX}%)`,
               }}
             >
@@ -140,7 +152,7 @@ const TestimonialCarousel = () => {
                 <div
                   key={item.id}
                   className="px-3 flex-shrink-0"
-                  style={{ 
+                  style={{
                     width: isMobile ? "100%" : `${100 / testimonials.length}%`,
                   }}
                 >
@@ -157,10 +169,12 @@ const TestimonialCarousel = () => {
                         <span>{item.rating}</span>
                       </div>
                     </div>
-
+                    <blockquote className="text-white/90 text-lg  leading-relaxed line-clamp-3 font-semibold">
+                     “{item.title}”
+                    </blockquote>
                     {/* Testimonial Text */}
-                    <blockquote className="text-white/90 text-lg font-light leading-relaxed line-clamp-4">
-                      "{item.text}"
+                    <blockquote className="text-white/90  font-light leading-relaxed line-clamp-4 text-sm ">
+                      {item.text}
                     </blockquote>
 
                     {/* Profile */}

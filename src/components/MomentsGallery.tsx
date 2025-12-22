@@ -1,18 +1,12 @@
 "use client";
-
-import React from "react";
+import React, { useState } from "react";
 import { motion, Variants } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 // --- Animation Variants ---
-const fadeInUp:Variants = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: "easeOut" } 
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 const staggerContainer = {
@@ -28,11 +22,7 @@ const staggerContainer = {
 
 const imageVariant = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
-    scale: 1,
-    transition: { duration: 0.5 }
-  },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
 };
 
 // --- Placeholder Data ---
@@ -44,88 +34,166 @@ const galleryImages = [
   },
   {
     id: 2,
-    src: "https://cdn.prod.website-files.com/64c82edd724cd267a8038611/65cc1ea2fd2eec76f0211034_Untitled%20design.jpg", 
+    src: "https://cdn.prod.website-files.com/64c82edd724cd267a8038611/65cc1ea2fd2eec76f0211034_Untitled%20design.jpg",
     alt: "Balloon over misty jungle",
   },
   {
     id: 3,
-    src: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/8f/19/48.jpg", 
+    src: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/8f/19/48.jpg",
     alt: "Balloon at sunset over hills",
   },
   {
     id: 4,
-    src: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/8f/19/48.jpg", 
+    src: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/8f/19/48.jpg",
     alt: "Scenic mountain layers",
   },
   {
     id: 5,
-    src: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/8f/19/48.jpg", 
+    src: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/8f/19/48.jpg",
     alt: "Orange balloon in clear sky",
   },
   {
     id: 6,
-    src: "https://cdn.prod.website-files.com/64c82edd724cd267a8038611/65cc1ea2fd2eec76f0211034_Untitled%20design.jpg", 
+    src: "https://cdn.prod.website-files.com/64c82edd724cd267a8038611/65cc1ea2fd2eec76f0211034_Untitled%20design.jpg",
     alt: "Looking up into a balloon basket",
   },
 ];
 
 const MomentsGallery = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+  };
+
   return (
-    <section className="bg-white py-20 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* --- Header Section --- */}
-        <motion.div 
+    <section className="relative py-20 px-6 bg-gradient-to-br from-sky-50 via-white to-orange-50 overflow-hidden">
+      {/* --- Header Section --- */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={staggerContainer}
+        className="max-w-7xl mx-auto text-center mb-16"
+      >
+        <motion.h2
+          variants={fadeInUp}
+          className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
+        >
+          Moments from the Sky
+        </motion.h2>
+
+        {/* Decorative Divider */}
+        <motion.div variants={fadeInUp} className="flex justify-center mb-6">
+          <div className="w-20 h-1 bg-gradient-to-r from-black/60 via-black/20 rounded-full" />
+        </motion.div>
+
+        <motion.p
+          variants={fadeInUp}
+          className="text-lg text-gray-600 max-w-2xl mx-auto"
+        >
+          Explore real snapshots from our rides - colorful balloons, sunrise
+          skies, happy customers, and breathtaking landscapes.
+        </motion.p>
+      </motion.div>
+
+      {/* --- Desktop Grid (hidden on mobile) --- */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={staggerContainer}
+        className="hidden md:grid max-w-7xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
+      >
+        {galleryImages.map((image) => (
+          <motion.div
+            key={image.id}
+            variants={imageVariant}
+            whileHover={{ scale: 1.05 }}
+            className="relative group overflow-hidden rounded-2xl shadow-lg cursor-pointer aspect-[4/3]"
+          >
+            <img
+              src={image.src}
+              alt={image.alt}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* --- Mobile Carousel (visible only on mobile) --- */}
+      <div className="md:hidden max-w-md mx-auto mb-12">
+        <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeInUp}
-          className="text-center mb-12"
+          className="relative"
         >
-          <h2 className="text-3xl md:text-5xl text-black font-semibold mb-4">
-            Moments from <br className="hidden md:block" /> the Sky
-          </h2>
-          
-          {/* Decorative Divider */}
-          <div className="w-10 h-0.5 bg-gray-800 mx-auto my-6" />
-
-          <p className="max-w-2xl mx-auto text-gray-500 text-sm md:text-base leading-relaxed">
-            Explore real snapshots from our rides - colorful balloons, sunrise skies, 
-            happy customers, and breathtaking landscapes.
-          </p>
-        </motion.div>
-
-        {/* --- Image Grid --- */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
-        >
-          {galleryImages.map((image) => (
+          {/* Carousel Container */}
+          <div className="relative overflow-hidden rounded-2xl shadow-xl aspect-[4/3]">
             <motion.div
-              key={image.id}
-              variants={imageVariant}
-              whileHover={{ scale: 1.02 }}
-              className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group cursor-pointer"
+              key={currentIndex}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.5 }}
+              className="w-full h-full"
             >
-              {/* Image with Next.js optimization */}
-              {/* Note: If not using Next.js Image, swap <Image /> for <img /> */}
               <img
-                src={image.src}
-                alt={image.alt}
-                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+                src={galleryImages[currentIndex].src}
+                alt={galleryImages[currentIndex].alt}
+                className="w-full h-full object-cover"
               />
-              
-              {/* Optional Overlay on Hover */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* --- Button --- */}
-        <motion.div 
+            {/* Navigation Buttons */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-2 mt-6">
+            {galleryImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`transition-all duration-300 rounded-full ${
+                  index === currentIndex
+                    ? "w-8 h-2 bg-green-500"
+                    : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to image ${index + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Image Counter */}
+          <div className="text-center mt-4 text-gray-600 font-medium">
+            {currentIndex + 1} / {galleryImages.length}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* --- Button --- */}
+         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -137,8 +205,6 @@ const MomentsGallery = () => {
             <ArrowUpRight size={18} />
           </button>
         </motion.div>
-
-      </div>
     </section>
   );
 };

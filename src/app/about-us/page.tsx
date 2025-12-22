@@ -88,6 +88,7 @@ const AboutUs = () => {
           <h2 className="text-2xl font-medium text-slate-800 mb-6">
             Plan Your Visit
           </h2>
+          <h3 className="text-lg font-medium text-slate-800 mb-6">Location: Wonder Volare Balloon Site, Anachal, Munnar, Kerala</h3>
 
           <div className="flex flex-wrap gap-4">
             <FeatureBadge icon={<Clock size={18} />} text="4.00am - 7.00pm" />
@@ -103,6 +104,7 @@ const AboutUs = () => {
             <FeatureBadge icon={<Armchair size={18} />} text="Waiting Area" />
             <FeatureBadge icon={<Coffee size={18} />} text="Refreshments" />
           </div>
+          <h2 className="text-xl font-semibold text-slate-800 mb-6 py-3">Book your flight now, let Munnar take your breath away, one float at a time.</h2>
         </div>
       </div>
       <Footer/>

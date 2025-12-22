@@ -56,20 +56,11 @@ const plans: Plan[] = [
   {
     id: 1,
     name: "Classic Sunrise Ride",
-    duration: "45 - 60 Minutes",
+    duration: "10-15 Minutes",
     maxPeople: "Max 4 peoples allowed",
     amenity: "Complementary Tea/Coffee",
     price: 1500,
     popular: true,
-  },
-  {
-    id: 2,
-    name: "Premium Couple Ride",
-    duration: "45 - 60 Minutes",
-    maxPeople: "Max 4 peoples allowed",
-    amenity: "Complementary Tea/Coffee",
-    price: 3999,
-    popular: false,
   },
 ];
 
@@ -654,12 +645,12 @@ const BookingPage: React.FC = () => {
                     </div>
                     <span className="font-medium">{plan.maxPeople}</span>
                   </div>
-                  <div className="flex items-center gap-4 text-gray-700 bg-gray-50 p-3 rounded-xl group-hover:bg-[#055A3A]/5 transition-colors">
+                  {/* <div className="flex items-center gap-4 text-gray-700 bg-gray-50 p-3 rounded-xl group-hover:bg-[#055A3A]/5 transition-colors">
                     <div className="bg-[#055A3A]/10 p-2 rounded-lg">
                       <Check size={20} className="text-[#055A3A]" />
                     </div>
                     <span className="font-medium">{plan.amenity}</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between pt-6 border-t-2 border-gray-100 gap-y-2">

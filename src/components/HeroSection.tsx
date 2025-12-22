@@ -6,48 +6,35 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
-const BACKGROUND_IMAGES = [
-  "https://images.unsplash.com/photo-1506459225024-1428097a7e18?q=80&w=2574&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1524235489813-9118c7325603?q=80&w=2670&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2670&auto=format&fit=crop",
-];
-
 export default function HeroSection() {
   const [bgIndex, setBgIndex] = useState(0);
   const router = useRouter();
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % BACKGROUND_IMAGES.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <>
       {/* --- Background Slider --- */}
       <div className="absolute inset-0 z-0">
-       <AnimatePresence mode="popLayout">
-    <motion.div
-      key={bgIndex}
-      initial={{ opacity: 0, scale: 1.1 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 1.5 }}
-      className="absolute inset-0"
-    >
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src={`/Wonder_v_banner.mp4`} type="video/mp4" />
-      </video>
-    </motion.div>
-  </AnimatePresence>
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={bgIndex}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+            className="absolute inset-0"
+          >
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+            >
+              <source src={`/Wonder_v_banner.mp4`} type="video/mp4" />
+            </video>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
@@ -60,19 +47,22 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold leading-tight"
+            className="text-3xl md:text-5xl md:text-6xl font-bold leading-tight"
           >
-            Experience the Sky <br /> Like Never Before
+            The hills meet the <br />
+            clouds, and you <br />
+            meet wonder
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-6 text-lg text-gray-300 max-w-md leading-relaxed"
+            className="mt-6 text-lg text-white max-w-lg leading-relaxed"
           >
-            Soar above mountains and sunlit horizons with our magical hot air
-            balloon ride. Book your adventure today.
+            Welcome to Wonder Volare, Munnar’s first-ever hot air balloon
+            experience that lets you rise above the valleys, breathe in the
+            mountain air, and see the world from a whole new view.
           </motion.p>
 
           <motion.button
@@ -85,7 +75,7 @@ export default function HeroSection() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => router.push("/booknow")}
-            className="mt-10 group bg-white text-black rounded-full py-2 pl-6 pr-2 flex items-center shadow-lg hover:shadow-xl transition-all duration-300"
+            className="mt-10 group bg-white text-black rounded-2xl py-2 pl-6 pr-2 flex items-center shadow-lg hover:shadow-xl transition-all duration-300"
           >
             {/* Text with subtle attention animation */}
             <motion.span

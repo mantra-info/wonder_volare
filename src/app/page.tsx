@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Sky Adventures",
     description: "Soar above mountains and sunlit horizons.",
-    images: ["https://images.unsplash.com/photo-1506459225024-1428097a7e18"],
+    images: ["/logo.png"],
   },
 };
 

@@ -3,11 +3,11 @@ import React from "react";
 const OurStory = () => {
   return (
     <section className="bg-white py-8 px-6 md:px-12">
-      <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+      <div className="mx-auto flex max-w-7xl flex-col items-center text-center">
         {/* 1. Illustration Image */}
         {/* I am using a placeholder illustration here. 
             Replace '/balloon-illustration.png' with your actual image path */}
-        <div className="relative mb-2 h-56 w-56 md:h-64 md:w-64">
+        <div className="relative mb-2 h-56 w-56 md:h-64 md:w-80">
           <svg
             width="229"
             height="167"
@@ -759,12 +759,22 @@ const OurStory = () => {
         <div className="mt-4 h-1 w-12 rounded-full bg-black"></div>
 
         {/* 3. Paragraph Text */}
-        <p className="mt-8 text-lg leading-relaxed text-gray-600 md:text-xl">
-          Our air balloon tours offer a peaceful yet thrilling escape into the
-          skies. Whether it’s your first ride or a special celebration, our
-          trained pilots and premium balloons ensure a safe and unforgettable
-          experience. Enjoy panoramic views, crisp morning air, and moments
-          you’ll never forget.
+        <p className="mt-8 text-lg leading-relaxed text-black md:text-lg font-semibold">
+          At Wonder Volare, we believe adventure doesn’t always need to rush
+          your heartbeat; sometimes it simply needs to lift your spirit.
+        </p>
+
+        <p className="mt-8 text-lg leading-relaxed text-black md:text-lg font-semibold">
+          Our hot air balloon rides are all about peace and pure joy. Imagine
+          standing in the basket as the balloon gently rises, the cool breeze on
+          your face, the golden sunlight over the tea gardens, and that quiet
+          moment when the whole world feels still.ush your heartbeat, sometimes
+          it simply need to lift your spirit.
+        </p>
+        <p className="mt-8 text-lg leading-relaxed text-black md:text-lg font-semibold">
+          We operate from <span className="text-green-700"> Anachal, Munnar</span>, surrounded by the natural beauty of
+          Kerala’s misty mountains. Every flight is handled with utmost care,
+          one balloon at a time, so every guest feels truly special.
         </p>
 
         {/* 4. Read More Button */}
