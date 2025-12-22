@@ -5,7 +5,7 @@ import Ticket from "../../../lib/models/Ticket";
 import { verify } from "jsonwebtoken";
 import User from "@/lib/models/User";
 import crypto from "crypto";
-
+import { sendTicketEmail } from "@/lib/mail";
 // Define all possible time slots for availability check
 const ALL_TIME_SLOTS = [
   "06.00am - 07.00am",
@@ -62,58 +62,27 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const {
-      // Booking Details
       planId,
       planName,
       date,
       timeSlot,
       numberOfPeople,
       pricePerPerson,
-      // Payment Details (New)
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
     } = body;
 
-    // Validate required fields
-    if (
-      !planId ||
-      !date ||
-      !timeSlot ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    const bodyData = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(bodyData.toString())
-      .digest("hex");
-
-    if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json(
-        { error: "Invalid Payment Signature" },
-        { status: 400 }
-      );
-    }
+    // 2. IST Date Range Calculation (Keep your existing code here...)
     const targetDate = new Date(date);
-
-    // IST start (00:00 IST)
     const startOfDay = new Date(targetDate);
     startOfDay.setUTCHours(18, 30, 0, 0);
     startOfDay.setUTCDate(startOfDay.getUTCDate() - 1);
-
-    // IST end (23:59 IST)
     const endOfDay = new Date(startOfDay);
     endOfDay.setUTCHours(18, 29, 59, 999);
     endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
-    // Check if the slot is already booked for this date
+    // 3. Final check: Is it already confirmed by someone else?
     const existingBooking = await Ticket.findOne({
       date: { $gte: startOfDay, $lte: endOfDay },
       timeSlot: timeSlot,
@@ -123,41 +92,67 @@ export async function POST(req: NextRequest) {
     if (existingBooking) {
       return NextResponse.json(
         { error: "The selected time slot is already booked." },
-        { status: 409 } // 409 Conflict: Slot Unavailable
+        { status: 409 }
       );
     }
 
-    // Generate ticket number and QR data
-    const ticketNumber = generateTicketNumber();
+    // 4. Prepare data for the ticket
+    const finalTicketNumber = generateTicketNumber();
     const totalPrice = pricePerPerson * numberOfPeople;
 
-    const ticketData = {
-      userEmail,
-      planId,
-      planName,
-      date: new Date(date),
-      timeSlot,
-      numberOfPeople,
-      pricePerPerson,
-      totalPrice,
-      ticketNumber,
-      qrCode: "",
-      status: "confirmed", // Set to confirmed now that payment is verified
+    // Create the QR Data object correctly
+    const qrDataString = JSON.stringify({
+      ticketNumber: finalTicketNumber,
+      email: userEmail,
+      plan: planName,
+      date: date,
+      time: timeSlot,
+      people: numberOfPeople,
+    });
 
-      // Save Payment Info
-      payment: {
-        razorpayOrderId: razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id,
-        razorpaySignature: razorpay_signature,
-        amountPaid: totalPrice,
-        status: "success",
+    // 5. Atomic Update or Create
+    let ticket = await Ticket.findOneAndUpdate(
+      {
+        "payment.razorpayOrderId": razorpay_order_id, // FIX: Use dot notation
+        userEmail: userEmail,
       },
-    };
-    ticketData.qrCode = generateQRData(ticketData);
+      {
+        $set: {
+          status: "confirmed",
+          ticketNumber: finalTicketNumber,
+          qrCode: qrDataString,
+          "payment.razorpayPaymentId": razorpay_payment_id,
+          "payment.razorpaySignature": razorpay_signature,
+          "payment.status": "success",
+        },
+      },
+      { new: true }
+    );
 
-    // Save to database
-    const ticket = await Ticket.create(ticketData);
-
+    // 6. Fallback (If user refreshed or lock record was missing)
+    if (!ticket) {
+      ticket = await Ticket.create({
+        userEmail,
+        planId,
+        planName,
+        date: new Date(date),
+        timeSlot,
+        numberOfPeople,
+        pricePerPerson,
+        totalPrice,
+        ticketNumber: finalTicketNumber,
+        qrCode: qrDataString,
+        status: "confirmed",
+        payment: {
+          razorpayOrderId: razorpay_order_id,
+          razorpayPaymentId: razorpay_payment_id,
+          razorpaySignature: razorpay_signature,
+          amountPaid: totalPrice,
+          status: "success",
+        },
+      });
+    }
+    await sendTicketEmail(ticket);
     return NextResponse.json({
       success: true,
       ticket: {
@@ -210,13 +205,20 @@ export async function GET(req: NextRequest) {
       endOfDay.setUTCHours(18, 29, 59, 999);
       endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
       // 1. Find all booked slots for the selected date
       const bookedTickets = await Ticket.find({
         date: {
           $gte: startOfDay,
           $lte: endOfDay,
         },
-        status: { $nin: ["cancelled", "pending_payment"] },
+        $or: [
+          { status: "confirmed" },
+          {
+            status: "pending_payment",
+            lockedAt: { $gte: tenMinutesAgo }, // Only block if the lock is fresh
+          },
+        ],
       }).select("timeSlot");
 
       const bookedSlots = bookedTickets.map((ticket) => ticket.timeSlot);

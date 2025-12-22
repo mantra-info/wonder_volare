@@ -91,46 +91,7 @@ function ThankYouContent() {
     }
   };
 
-  // --- 3. AUTO SEND ON MOUNT ---
-  useEffect(() => {
-    const sendTicket = async () => {
-      // Prevent running if no ref, or already sent, or missing contact info
-      if (!ticketRef.current || hasSentRef.current) return;
-      if (!email && !phone) return; 
-
-      // Wait a moment for images/fonts to render
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      hasSentRef.current = true; // Mark as sent
-      setStatus("Sending ticket to email/whatsapp...");
-
-      const pdfBlob = await generatePDFBlob();
-      if (!pdfBlob) return;
-
-      // Create Form Data to send to API
-      const formData = new FormData();
-      formData.append("file", pdfBlob, `ticket-${bookingId}.pdf`);
-      formData.append("email", email || "");
-      formData.append("phone", phone || "");
-      formData.append("name", name);
-      formData.append("bookingId", bookingId);
-
-      try {
-        const res = await fetch("/api/send-ticket", {
-          method: "POST",
-          body: formData,
-        });
-        
-        if (res.ok) setStatus("Ticket sent successfully!");
-        else setStatus("Failed to send automatic ticket.");
-      } catch (error) {
-        console.error("API Error", error);
-        setStatus("Error sending ticket.");
-      }
-    };
-
-    sendTicket();
-  }, [bookingId, email, phone, name]);
+  
   return (
     <div className="flex flex-col items-center gap-6">
       {/* TICKET ONLY */}
