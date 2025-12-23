@@ -9,5 +9,5 @@
     "noEmit": false,
     "outDir": "dist"
   },
-  "include": ["script/**/*.ts"]
+  "include": ["scripts/**/*.ts"]
 }
