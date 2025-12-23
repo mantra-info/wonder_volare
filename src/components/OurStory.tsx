@@ -8,7 +8,7 @@ const OurStory = () => {
         {/* 1. Illustration Image */}
         {/* I am using a placeholder illustration here. 
             Replace '/balloon-illustration.png' with your actual image path */}
-        <div className="relative mb-2 h-56 w-56 md:h-64 md:w-80">
+        <div className="relative mb-2 h-56 w-56 md:h-64 md:w-64">
           <svg
             width="229"
             height="167"
