@@ -752,7 +752,7 @@ const OurStory = () => {
         </div>
 
         {/* 2. Heading & Divider */}
-        <h2 className="text-4xl font-semibold text-black md:text-5xl">
+        <h2 className="text-2xl md:text-4xl font-semibold text-black md:text-5xl">
           Our Story
         </h2>
 
@@ -760,19 +760,19 @@ const OurStory = () => {
         <div className="mt-4 h-1 w-12 rounded-full bg-black"></div>
 
         {/* 3. Paragraph Text */}
-        <p className="mt-8 text-lg leading-relaxed text-black md:text-lg font-semibold">
+        <p className="mt-8 text-sm leading-relaxed text-black md:text-lg font-semibold">
           At Wonder Volare, we believe adventure doesn’t always need to rush
           your heartbeat; sometimes it simply needs to lift your spirit.
         </p>
 
-        <p className="mt-8 text-lg leading-relaxed text-black md:text-lg font-semibold">
+        <p className="mt-8 text-sm leading-relaxed text-black md:text-lg font-semibold">
           Our hot air balloon rides are all about peace and pure joy. Imagine
           standing in the basket as the balloon gently rises, the cool breeze on
           your face, the golden sunlight over the tea gardens, and that quiet
           moment when the whole world feels still.ush your heartbeat, sometimes
           it simply need to lift your spirit.
         </p>
-        <p className="mt-8 text-lg leading-relaxed text-black md:text-lg font-semibold">
+        <p className="hidden md:block mt-8 text-sm leading-relaxed text-black md:text-lg font-semibold">
           We operate from <span className="text-green-700"> Anachal, Munnar</span>, surrounded by the natural beauty of
           Kerala’s misty mountains. Every flight is handled with utmost care,
           one balloon at a time, so every guest feels truly special.

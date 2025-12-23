@@ -28,7 +28,7 @@ const AboutUs = () => {
         <div className="relative w-full h-[250px] md:h-[400px] mb-8">
           {/* Replace the src with your actual balloon image asset */}
           <Image
-            src="https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?q=80&w=2070&auto=format&fit=crop"
+            src="/28163.jpg"
             alt="Hot air balloon over mountains"
             fill
             className="object-cover rounded-[2rem] shadow-sm"

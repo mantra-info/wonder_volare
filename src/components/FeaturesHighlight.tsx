@@ -89,7 +89,7 @@ const WhyChooseUs = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8 lg:mb-16">
-          <h2 className="text-4xl md:text-5xl text-white font-normal mb-6">
+          <h2 className="text-2xl md:text-5xl text-white font-normal mb-6">
             Why Choose Us?
           </h2>
           <div className="w-16 h-1 bg-white mx-auto rounded-full" />

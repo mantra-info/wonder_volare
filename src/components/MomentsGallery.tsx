@@ -85,7 +85,7 @@ const MomentsGallery = () => {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
+          className="text-2xl md:text-5xl font-bold text-gray-900 mb-4"
         >
           Moments from the Sky
         </motion.h2>

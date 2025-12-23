@@ -139,7 +139,7 @@ const Footer = () => {
           <p>Copyright 2025@WonderVolare.All Rights Reserved</p>
           <p className="flex items-center gap-1">
             Designed&Developed by{" "}
-            <span className="text-white/90 font-medium">Mantrainfotechs</span>
+            <span className="text-green-600 text-lg font-bold ">mits</span>
           </p>
         </div>
       </div>

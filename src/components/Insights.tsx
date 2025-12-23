@@ -66,7 +66,7 @@ const InsightsSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl text-gray-900 font-medium mb-4">
+          <h2 className="text-2xl md:text-5xl text-gray-900 font-medium mb-4">
             Insights
           </h2>
           {/* Decorative underline */}
@@ -102,7 +102,7 @@ const InsightsSection = () => {
                   {blog.date}
                 </span>
                 
-                <h3 className="text-xl text-gray-900 font-medium mb-6 line-clamp-2">
+                <h3 className="text-lg lg:text-xl text-gray-900 font-medium mb-6 line-clamp-2">
                   {blog.title}
                 </h3>
 

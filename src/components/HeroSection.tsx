@@ -41,13 +41,13 @@ export default function HeroSection() {
       </div>
 
       {/* --- Hero Content --- */}
-      <div className="relative z-20 h-[calc(100vh-80px)] flex items-center px-6 md:px-12 max-w-7xl mx-auto">
+      <div className="relative z-20 h-[calc(90vh-100px)] md:h-[calc(100vh-80px) flex items-end md:items-center px-6 md:px-12 max-w-7xl mx-auto">
         <div className="max-w-2xl">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl md:text-5xl md:text-6xl font-bold leading-tight"
+            className="text-2xl md:text-5xl md:text-6xl font-bold leading-tight"
           >
             The hills meet the <br />
             clouds, and you <br />
@@ -58,7 +58,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-6 text-lg text-white max-w-lg leading-relaxed"
+            className="hidden md:block mt-6 text-sm lg:text-lg text-white max-w-lg leading-relaxed"
           >
             Welcome to Wonder Volare, Munnar’s first-ever hot air balloon
             experience that lets you rise above the valleys, breathe in the

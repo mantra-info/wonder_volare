@@ -15,7 +15,6 @@ function ThankYouContent() {
   const searchParams = useSearchParams();
   const ticketRef = useRef<HTMLDivElement>(null);
   const {user}=useAuth()
-  // Prevent double sending in React Strict Mode
   const hasSentRef = useRef(false);
   const [status, setStatus] = useState("Generating ticket...");
 

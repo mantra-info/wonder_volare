@@ -124,7 +124,7 @@ const TestimonialCarousel = () => {
       <div className="relative max-w-7xl mx-auto z-10">
         {/* --- Header --- */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl text-white font-medium mb-4">
+          <h2 className="text-2xl md:text-5xl text-white font-medium mb-4">
             Hear From Our <br /> Happy Guests
           </h2>
           <div className="w-12 h-1 bg-white mx-auto rounded-full" />

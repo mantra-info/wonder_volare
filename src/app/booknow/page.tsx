@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Modal from "@/components/ui/Modal";
 import AuthForm from "@/components/auth/AuthForm";
+import { Loader2 } from "lucide-react";
 
 // Define the TimeSlot interface (used for fetching availability)
 interface TimeSlot {
@@ -88,7 +89,7 @@ const ToastNotification: React.FC<{ message: string; onClose: () => void }> = ({
 };
 
 const BookingPage: React.FC = () => {
-  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(plans[0]?.id);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const router = useRouter();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -108,6 +109,7 @@ const BookingPage: React.FC = () => {
 
   // State for error/validation message (simulates toast)
   const [errorMessage, setErrorMessage] = useState("");
+  const [isPendingBooking, setIsPendingBooking] = useState(false);
 
   const [formData, setFormData] = useState<BookingFormData>({
     name: "",
@@ -162,6 +164,13 @@ const BookingPage: React.FC = () => {
       setIsLoadingSlots(false);
     }
   }, []);
+
+    useEffect(() => {
+    if (user && isPendingBooking) {
+      setIsPendingBooking(false); // Reset flag
+      handleBooking(); // Trigger booking logic
+    }
+  }, [user, isPendingBooking]);
 
   // Effect to fetch slots when date changes
   useEffect(() => {
@@ -262,6 +271,7 @@ const BookingPage: React.FC = () => {
       });
 
       if (orderRes.status === 401) {
+         setIsPendingBooking(true);
         setIsAuthOpen(true);
         setIsLoading(false);
         return;
@@ -404,6 +414,14 @@ const BookingPage: React.FC = () => {
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
+      {isLoading && (
+        <div className="fixed inset-0 z-[9999] bg-[#055A3A]/60 backdrop-blur-md flex flex-col items-center justify-center text-white">
+          <Loader2 className="w-12 h-12 animate-spin mb-4" />
+          <h2 className="text-2xl font-bold">Verifying Payment</h2>
+          <p className="opacity-80">Please do not refresh or close this page...</p>
+        </div>
+      )}
+
 
       <PageBreadcrumb
         items={[{ label: "Home", href: "/" }, { label: "Booking" }]}
@@ -692,7 +710,7 @@ const BookingPage: React.FC = () => {
       )}
       <Modal
         isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
+        onClose={() => {setIsAuthOpen(false);setIsPendingBooking(false)}}
         title="Welcome Back"
       >
         <AuthForm onSuccess={() => setIsAuthOpen(false)} />

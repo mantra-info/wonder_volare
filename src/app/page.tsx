@@ -23,22 +23,15 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main>
-      <div className="relative h-screen w-full overflow-hidden bg-black text-white">
-        
-        {/* Navbar handles Auth and Mobile Menu (Client Logic) */}
+      <div className="relative h-screen w-full overflow-hidden bg-black text-white">       
         <Navbar />
-
-        {/* Hero Section handles Background Slider and Animations (Client Logic) */}
         <HeroSection />
-
       </div>
-
-      {/* The rest of the page */}
       <OurStory />
       <WhyChooseUs />
       <MomentsGallery />
       <TestimonialCarousel />
-      <InsightsSection />
+      {/* <InsightsSection /> */}
       <Footer />
     </main>
   );
