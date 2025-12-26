@@ -585,7 +585,7 @@ const BookingPage: React.FC = () => {
 
               {/* SUBMIT */}
               <button
-                onClick={handleBooking}
+                // onClick={handleBooking}
                 disabled={isLoading || !acceptedTerms}
                 className="bg-white text-[#055A3A] font-bold rounded-2xl py-3 sm:py-4 mt-2 md:hover:scale-105 transition disabled:opacity-50"
               >
