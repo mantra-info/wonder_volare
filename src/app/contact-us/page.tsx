@@ -105,13 +105,18 @@ const ContactPage = () => {
 
             {/* Map Container */}
             <div className="relative w-full h-[500px] bg-[#F3F0E0] rounded-lg overflow-hidden border border-amber-100 shadow-inner group">
-              {/* This image tag is a placeholder. Replace src with your actual map image */}
-              <img
-                src="/api/placeholder/600/800"
-                alt="Munnar Map Location"
-                className="w-full h-full object-cover opacity-80 mix-blend-multiply"
-              />
-
+                <iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.9665288073284!2d77.04201807537277!3d10.019620772696074!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b079954fcd1fa85%3A0xf98ff350aee40fcf!2sWonder%20Volare%20Munnar%20Hot%20Air%20Balloon!5e0!3m2!1sen!2sin!4v1766990214748!5m2!1sen!2sin"
+    width="100%"
+    height="100%"
+    style={{ border: 0 }} // Corrected: Object instead of string
+    allowFullScreen // Corrected: CamelCase
+    loading="lazy"
+    referrerPolicy="no-referrer-when-downgrade" // Corrected: CamelCase
+    title="Wonder Volare Location Map"
+    className="w-full h-full grayscale-[20%] hover:grayscale-0 transition-all duration-500"
+  ></iframe>
+           
               {/* Simulated Map Elements (if you don't have the image yet) */}
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-30"></div>
 

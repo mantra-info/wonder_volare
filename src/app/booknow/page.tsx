@@ -57,7 +57,7 @@ const plans: Plan[] = [
   {
     id: 1,
     name: "Classic Sunrise Ride",
-    duration: "10-15 Minutes",
+    duration: "5-7 Minutes",
     maxPeople: "Max 4 peoples allowed",
     amenity: "Complementary Tea/Coffee",
     price: 1500,
